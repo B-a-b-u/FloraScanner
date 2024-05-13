@@ -1,16 +1,62 @@
-import { Image,Text, StyleSheet, Platform } from 'react-native';
+import { Image,Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { useState } from 'react';
+import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 
-export default function HomeScreen() {
+
+
+export default function Upload() {
+
+  const [prediction,setPrediction] = useState('');
+
+  // To handle upload button
+  const pickImage = async () => {
+    console.log("Upload Button Pressed");
+
+    // Get image
+    const result = await launchImageLibraryAsync(
+      {
+        mediaTypes : MediaTypeOptions.Images,
+        base64 : true,
+        selectionLimit : 1,
+      }
+    )
+
+    if (result.cancelled) {
+      console.log("User Cancelled Image Upload");
+      return;
+    }
+    else{
+    console.log("Picked Image : ",result);
+    }
+
+    // Post the image to api
+    const response = await fetch("https://florascannerapi.onrender.com/predict",{
+      method : "POST",
+      headers : {
+        'Content-Type': 'application/json',
+      },
+      body : JSON.stringify({image:result.assets[0].base64})
+    })
+
+    const temp = await response.json()
+    console.log("API response : ",temp);
+    setPrediction(temp);
+
+  }
   return (
     <SafeAreaView>
       <Text>
-        Hello Upload
+        Hello Upload Please render aagu da...
       </Text>
+
+      <TouchableOpacity
+      onPress={pickImage}
+      >
+       <Text>Upload Image</Text>
+      </TouchableOpacity>
+
+      <Text>{prediction.class}</Text>
     </SafeAreaView>
   );
 }
