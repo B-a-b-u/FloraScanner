@@ -15,7 +15,7 @@ export default function TabLayout() {
         headerShown: false,
       }}>
       <Tabs.Screen
-        name="index"
+        name="upload"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
@@ -24,7 +24,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="camera"
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
