@@ -1,4 +1,4 @@
-import { Image,Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { launchCameraAsync, MediaTypeOptions } from 'expo-image-picker';
@@ -7,18 +7,18 @@ import { launchCameraAsync, MediaTypeOptions } from 'expo-image-picker';
 
 export default function Camera() {
 
-  const [prediction,setPrediction] = useState('');
+  const [prediction, setPrediction] = useState('');
 
   // To handle upload button
-  const pickImage = async () => {
+  const captureImage = async () => {
     console.log("Capture Button Pressed");
 
     // Get image
     const result = await launchCameraAsync(
       {
-        mediaTypes : MediaTypeOptions.Images,
-        base64 : true,
-        selectionLimit : 1,
+        mediaTypes: MediaTypeOptions.Images,
+        base64: true,
+        selectionLimit: 1,
       }
     )
 
@@ -26,36 +26,39 @@ export default function Camera() {
       console.log("User Cancelled Image Capture");
       return;
     }
-    else{
-    console.log("Captured Image : ",result);
+    else {
+      console.log("Captured Image : ", result);
     }
 
     console.log("Going to fetch")
     // Post the image to api
-    const response = await fetch("https://florascannerapi.onrender.com/predict",{
-      method : "POST",
-      headers : {
+    const response = await fetch("https://florascannerapi.onrender.com/predict", {
+      method: "POST",
+      headers: {
         'Content-Type': 'application/json',
       },
-      body : JSON.stringify({image:result.assets[0].base64})
+      body: JSON.stringify({ image: result.assets[0].base64 })
     })
 
     const temp = await response.json()
-    console.log("API response : ",temp);
+    console.log("API response : ", temp);
     setPrediction(temp);
 
   }
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       <Text>
-        Hello Upload new the ehllo do something
+        Click the Button to Capture the Plant Image
       </Text>
 
-      <TouchableOpacity
-      onPress={pickImage}
+      <Pressable
+        onPress={captureImage}
+        style={styles.uploadButton}
       >
-       <Text>Capture Image</Text>
-      </TouchableOpacity>
+        <Text
+          style={styles.uploadText}
+        >Capture Image</Text>
+      </Pressable>
 
       <Text>{prediction.class}</Text>
 
@@ -64,20 +67,32 @@ export default function Camera() {
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#fff',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  heading: {
+    fontFamily: "InknutAntiqua-Black",
+    fontSize: 24,
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  uploadButton: {
+    backgroundColor: '#71CF4C',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  uploadText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: "InknutAntiqua-Regular"
+  },
+  prediction: {
+    fontSize: 18,
+    marginTop: 20,
   },
 });

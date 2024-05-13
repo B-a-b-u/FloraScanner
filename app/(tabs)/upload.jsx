@@ -1,13 +1,14 @@
-import { Image,Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, Text, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
-
+import { ActivityIndicator } from 'react-native';
 
 
 export default function Upload() {
 
-  const [prediction,setPrediction] = useState('');
+  const [prediction, setPrediction] = useState('');
+  const [isLoading,setIsLoading] = useState(false);
 
   // To handle upload button
   const pickImage = async () => {
@@ -16,9 +17,9 @@ export default function Upload() {
     // Get image
     const result = await launchImageLibraryAsync(
       {
-        mediaTypes : MediaTypeOptions.Images,
-        base64 : true,
-        selectionLimit : 1,
+        mediaTypes: MediaTypeOptions.Images,
+        base64: true,
+        selectionLimit: 1,
       }
     )
 
@@ -26,56 +27,80 @@ export default function Upload() {
       console.log("User Cancelled Image Upload");
       return;
     }
-    else{
-    console.log("Picked Image : ",result);
+    else {
+      console.log("Picked Image : ", result);
     }
 
     // Post the image to api
-    const response = await fetch("https://florascannerapi.onrender.com/predict",{
-      method : "POST",
-      headers : {
+    setIsLoading(true);
+    const response = await fetch("https://florascannerapi.onrender.com/predict", {
+      method: "POST",
+      headers: {
         'Content-Type': 'application/json',
       },
-      body : JSON.stringify({image:result.assets[0].base64})
+      body: JSON.stringify({ image: result.assets[0].base64 })
     })
 
     const temp = await response.json()
-    console.log("API response : ",temp);
+    console.log("API response : ", temp);
     setPrediction(temp);
+    isLoading(false);
 
   }
   return (
-    <SafeAreaView>
-      <Text>
-        Hello Upload Please render aagu da...
+    <SafeAreaView style={styles.container}>
+      <Text style={
+        {
+          fontFamily: "InknutAntiqua-Black"
+        }
+      }>
+        Click the Button to Upload the Plant Image
       </Text>
 
-      <TouchableOpacity
-      onPress={pickImage}
+      <Pressable
+        onPress={pickImage}
+        style={styles.uploadButton}
       >
-       <Text>Upload Image</Text>
-      </TouchableOpacity>
+        <Text
+          style={styles.uploadText}
+        >Upload Image</Text>
+      </Pressable>
 
-      <Text>{prediction.class}</Text>
+      {isLoading ? <ActivityIndicator></ActivityIndicator> :
+      <>
+        <Text>{prediction.class}</Text>
+      </>}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#fff',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  heading: {
+    fontFamily: "InknutAntiqua-Black",
+    fontSize: 24,
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  uploadButton: {
+    backgroundColor: '#71CF4C',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  uploadText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: "InknutAntiqua-Regular"
+  },
+  prediction: {
+    fontSize: 18,
+    marginTop: 20,
   },
 });
