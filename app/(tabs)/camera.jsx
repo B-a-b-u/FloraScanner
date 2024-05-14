@@ -131,13 +131,15 @@ const styles = StyleSheet.create({
     fontFamily: "InknutAntiqua-Black",
     fontSize: 24,
     marginBottom: 20,
+    fontWeight : "bold",
+
   },
   uploadButton: {
     backgroundColor: '#71CF4C',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginBottom: 20,
+    margin: 20,
   },
   uploadText: {
     color: '#fff',

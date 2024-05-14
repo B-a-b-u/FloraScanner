@@ -5,18 +5,15 @@ const HomeLayout = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Image
-        source={require("../../assets/images/splash.png")}
+        source={require("../../assets/images/Focus-amico.png")}
         style={styles.logo}
         resizeMode='contain'
       />
-      <Text>Welcome to Flora Scanner App</Text>
-      <Text>Explore about the Plants in just a click</Text>
+      <Text style={styles.title}>Welcome to Flora Scanner App</Text>
+      <Text style={styles.subtitle}>Explore about the Plants in just a click</Text>
     </SafeAreaView>
   )
 }
-
-
-export default HomeLayout
 
 const styles = StyleSheet.create({
   container: {
@@ -27,8 +24,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 250,
+    height: 250,
     marginBottom: 20,
   },
   title: {
@@ -40,5 +37,22 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  featuresContainer: {
+    marginTop: 20,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  featureItem: {
+    marginBottom: 10,
+  },
+  featureText: {
+    fontSize: 14,
   },
 });
+
+export default HomeLayout

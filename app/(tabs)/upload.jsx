@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
   heading: {
     fontFamily: "InknutAntiqua-Black",
     fontSize: 24,
+    fontWeight : "bold",
     marginBottom: 20,
   },
   uploadButton: {
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginBottom: 20,
+    margin : 20,
   },
   uploadText: {
     color: '#fff',
