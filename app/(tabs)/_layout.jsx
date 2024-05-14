@@ -11,13 +11,39 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarBackground : () => (
-          <>
-          </>
-        ),
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarLabelStyle : {
+          fontFamily : 'InknutAntiqua-Bold',
+          fontSize : 10
+        },
+        tabBarActiveTintColor : '#3B9213',
         headerShown: false,
       }}>
+
+<Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, focused }) => (
+            <>
+            
+            <Image
+            source={require("../../assets/icons/home.png")}
+            name={focused ? 'home' : 'home-outline'} 
+            tintColor={color} 
+            style={
+              {
+                width : 30,
+                height : 30,
+              }
+            }
+
+            resizeMode='contain'
+            />
+            </>
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="upload"
         options={{

@@ -5,7 +5,7 @@ import { Link, Redirect } from 'expo-router'
 
 const Dummy = () => {
   return (
-    <Redirect href='/upload' />
+    <Redirect href='/home' />
   )
 }
 
