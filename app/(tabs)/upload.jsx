@@ -68,7 +68,7 @@ export default function Upload() {
         >Upload Image</Text>
       </Pressable>
 
-      {isLoading ? <ActivityIndicator /> :
+      {isLoading ? <ActivityIndicator size='large' /> :
         <Modal
           animationType="slide"
           transparent={true}
