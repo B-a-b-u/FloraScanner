@@ -92,6 +92,32 @@ export default function TabLayout() {
           ),
         }}
       />
+
+
+<Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <>
+            
+            <Image
+            source={require("../../assets/icons/profile.png")}
+            name={focused ? 'home' : 'home-outline'} 
+            tintColor={color} 
+            style={
+              {
+                width : 30,
+                height : 30,
+              }
+            }
+
+            resizeMode='contain'
+            />
+            </>
+          ),
+        }}
+      />
     </Tabs>
   );
 }

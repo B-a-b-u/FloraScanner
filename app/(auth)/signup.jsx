@@ -1,19 +1,13 @@
-import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView } from 'react-native'
+import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView , ActivityIndicator} from 'react-native'
 import React, { useState } from 'react'
 import { initializeApp } from "firebase/app";
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { Redirect } from 'expo-router';
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
-  authDomain: "florascanner-4f4ff.firebaseapp.com",
-  projectId: "florascanner-4f4ff",
-  storageBucket: "florascanner-4f4ff.appspot.com",
-  messagingSenderId: "57419221422",
-  appId: "1:57419221422:web:b827a7ffa828aeddf2203f",
-  measurementId: "G-X52047XLNC"
+  // Your Firebase config here
 };
-
 
 
 
@@ -22,6 +16,7 @@ const SignUp =  () => {
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [isLoading,setIsLoading] = useState(false);
+    const [isCreated, setIsCreated] = useState(false);
 
     const handleSubmit = async () => {
       setIsLoading(true)
@@ -35,6 +30,9 @@ const SignUp =  () => {
 
         const response = await createUserWithEmailAndPassword(auth,email,password);
         console.log("Response : ",response)
+        if(response){
+          setIsCreated(true);
+        }
 
        
 
@@ -42,66 +40,83 @@ const SignUp =  () => {
         setPassword('');
         setIsLoading(false);
     }
-  return (
-    <SafeAreaView style={styles.container}>
-        <View style={styles.inputContainer}>
-            <TextInput 
+    return (
+      <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior="padding">
+        {isLoading ? <ActivityIndicator size="large" /> : 
+        (
+          <View style={styles.inputContainer}>
+          <Text style={styles.title}>Create Your Flora Scanner Account</Text>
+          <TextInput
             value={email}
             style={styles.input}
-            placeholder='plant@gmail.com'
-            onChangeText={(text) => {
-                setEmail(text)
-            }}
-            />
-
-          <TextInput 
-          value={password}
-          style={styles.input}
-            onChangeText={(text) => {
-                setPassword(text)
-            }}
+            placeholder='Email'
+            onChangeText={(text) => setEmail(text)}
+          />
+          <TextInput
+            value={password}
+            style={styles.input}
+            placeholder='Password'
+            onChangeText={(text) => setPassword(text)}
             secureTextEntry
-            />
-          <Pressable
-          onPress={handleSubmit}
-          >
-            <Text>Submit</Text>
+          />
+          <Pressable onPress={handleSubmit} style={styles.submitButton} disabled={isLoading}>
+            <Text style={styles.submitText}>Submit</Text>
           </Pressable>
-        </View>
-    </SafeAreaView>
-  )
-}
 
+          {isCreated ? <Redirect href="/profile" /> : <></>}
+        </View>
+
+        )
+        }
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#fff',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  keyboardAvoidingContainer: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
   inputContainer: {
-      width: '80%',
+    width: '100%',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
   input: {
-      borderWidth: 1,
-      borderColor: '#ccc',
-      borderRadius: 5,
-      padding: 10,
-      marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    width: '100%',
   },
-  button: {
-      backgroundColor: '#007bff',
-      paddingVertical: 10,
-      borderRadius: 5,
-      alignItems: 'center',
+  submitButton: {
+    backgroundColor: '#41B06E',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 5,
+    alignItems: 'center',
   },
-  buttonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
+  submitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
-
-export default SignUp
+export default SignUp;
