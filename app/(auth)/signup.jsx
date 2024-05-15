@@ -6,7 +6,13 @@ import { Redirect } from 'expo-router';
 
 
 const firebaseConfig = {
-  // Your Firebase config here
+  apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
+  authDomain: "florascanner-4f4ff.firebaseapp.com",
+  projectId: "florascanner-4f4ff",
+  storageBucket: "florascanner-4f4ff.appspot.com",
+  messagingSenderId: "57419221422",
+  appId: "1:57419221422:web:b827a7ffa828aeddf2203f",
+  measurementId: "G-X52047XLNC"
 };
 
 
@@ -119,4 +125,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUp;
+
+export default SignUp
