@@ -2,11 +2,18 @@ import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidi
 import React, { useState } from 'react'
 import { initializeApp } from "firebase/app";
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { collection, doc, getFirestore, setDoc } from 'firebase/firestore';
 import { Redirect } from 'expo-router';
 
 
 const firebaseConfig = {
-  
+  apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
+  authDomain: "florascanner-4f4ff.firebaseapp.com",
+  projectId: "florascanner-4f4ff",
+  storageBucket: "florascanner-4f4ff.appspot.com",
+  messagingSenderId: "57419221422",
+  appId: "1:57419221422:web:b827a7ffa828aeddf2203f",
+  measurementId: "G-X52047XLNC"
 };
 
 
@@ -31,6 +38,19 @@ const SignUp =  () => {
         const response = await createUserWithEmailAndPassword(auth,email,password);
         console.log("Response : ",response)
         if(response){
+          try{
+            const db = await getFirestore(app);
+            console.log("Database initalized : ",db);
+            const userHistory = await collection(db,"UserHistory");
+            console.log("collection initalized : ",userHistory);
+            const document = await doc(userHistory,email)
+            console.log("Document Initalized : ",document)
+            const resp = await setDoc(document,{"plants" : []})
+            console.log("Data is setted : ",resp)
+          }
+          catch(error){
+            console.log("Firestore error : ",error);
+          }
           setIsCreated(true);
         }
 
