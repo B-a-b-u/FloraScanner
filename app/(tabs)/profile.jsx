@@ -1,8 +1,10 @@
-import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView,ActivityIndicator, Modal } from 'react-native'
+import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView,ActivityIndicator, Modal, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
 import { onAuthStateChanged, getAuth, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { Link } from 'expo-router';
+import { getFirestore, doc, getDoc, onSnapshot, getDocs } from 'firebase/firestore';
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
@@ -14,25 +16,29 @@ const firebaseConfig = {
   measurementId: "G-X52047XLNC"
 };
 
+const app = initializeApp(firebaseConfig);
 
 
-const Profile =  () => {
-
+const Profile = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
-  const [noAcc, setNoAcc] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [plants, setPlants] = useState([]);
 
   useEffect(() => {
-    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
+        const db = getFirestore(app);
+        const userDocRef = doc(db, 'UserHistory', user.email);
+        onSnapshot(userDocRef,(doc) => {
+            fetchUserPlants(user.email)
+        })
+        fetchUserPlants(user.email);
       }
     });
 
@@ -41,20 +47,13 @@ const Profile =  () => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
-      console.log('Response : ', response);
-    }  catch (error) {
-      if (error.code === 'auth/invalid-email' || error.code === 'auth/invalid-credential') {
-        setShowModal(true);
-        setNoAcc(true);
-      }
-      else{
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
       console.error('Error signing in:', error.message);
-      }
+      setShowModal(true);
     } finally {
       setEmail('');
       setPassword('');
@@ -62,24 +61,43 @@ const Profile =  () => {
     }
   };
 
+  const fetchUserPlants = async (email) => {
+    setIsLoading(true);
+    const db = getFirestore(app);
+    const userDocRef = doc(db, 'UserHistory', email);
+
+    try {
+      const docSnapshot = await getDoc(userDocRef);
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        setPlants(data.plants || []);
+      } else {
+        console.log("No user document found");
+      }
+      }
+     catch (error) {
+      console.error('Error fetching user plants:', error);
+      setShowModal(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogOut = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     const auth = getAuth();
     await signOut(auth);
-    setIsLoading(false)
+    setIsLoading(false);
   };
 
   const closeModal = () => {
     setShowModal(false);
-    setNoAcc(false); // Reset noAcc state
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior="padding">
-      
-              {isLoading ? <ActivityIndicator size="large"/> : 
-        (
+        {isLoading ? <ActivityIndicator size="large" /> : (
           <View style={styles.profileContainer}>
             {user ? (
               <>
@@ -87,6 +105,16 @@ const Profile =  () => {
                 <Pressable onPress={handleLogOut} style={styles.logoutButton}>
                   <Text style={styles.logoutText}>Logout</Text>
                 </Pressable>
+                {plants.length > 0 ? (
+                  <ScrollView style={styles.plantsContainer}>
+                    <Text style={styles.plantsHeading}>Explored Plants</Text>
+                    {plants.map((plant, index) => (
+                      <Text key={index} style={styles.plant}>{plant}</Text>
+                    ))}
+                  </ScrollView>
+                ) : (
+                  <Text style={styles.noPlantsText}>You have no plants saved</Text>
+                )}
               </>
             ) : (
               <>
@@ -113,16 +141,15 @@ const Profile =  () => {
               </>
             )}
           </View>
-        )
-        }
+        )}
         <Modal
           visible={showModal}
           transparent={true}
           animationType="fade"
-          onRequestClose={closeModal} // Close modal when back button is pressed on Android
+          onRequestClose={closeModal}
         >
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>No Account Found</Text>
+            <Text style={styles.modalText}>Error signing in. Please try again.</Text>
             <Pressable style={styles.closeButton} onPress={closeModal}>
               <Text style={styles.closeButtonText}>Close</Text>
             </Pressable>
@@ -136,16 +163,13 @@ const Profile =  () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fff',
   },
   keyboardAvoidingContainer: {
     flex: 1,
-    width: '100%',
+    paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
   profileContainer: {
     width: '100%',
@@ -189,18 +213,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  modalContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   signupLink: {
     alignItems: 'center',
   },
   signupText: {
     color: '#71B16E',
     fontSize: 16,
-  },
-  modalContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   modalText: {
     fontSize: 20,
@@ -216,6 +240,28 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  plantsContainer: {
+    marginTop: 20,
+    width: '100%',
+    paddingHorizontal: 20,
+  },plant: {
+    fontSize: 16,
+    marginBottom: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#C7FDB4',
+    borderRadius: 5,
+  },
+  plantsHeading: {
+    fontSize: 18,
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
+ 
+  noPlantsText: {
+    fontSize: 16,
+    marginBottom: 20,
   },
 });
 
