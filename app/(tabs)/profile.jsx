@@ -77,7 +77,8 @@ const Profile =  () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior="padding">
-        {isLoading ? <ActivityIndicator size="large"/> : 
+      
+              {isLoading ? <ActivityIndicator size="large"/> : 
         (
           <View style={styles.profileContainer}>
             {user ? (

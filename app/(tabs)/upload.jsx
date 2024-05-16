@@ -1,15 +1,42 @@
 import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 import { ActivityIndicator } from 'react-native';
+import { getDoc, doc, getFirestore, setDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
 
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
+  authDomain: "florascanner-4f4ff.firebaseapp.com",
+  projectId: "florascanner-4f4ff",
+  storageBucket: "florascanner-4f4ff.appspot.com",
+  messagingSenderId: "57419221422",
+  appId: "1:57419221422:web:b827a7ffa828aeddf2203f",
+  measurementId: "G-X52047XLNC"
+};
+
+const app = initializeApp(firebaseConfig)
 
 export default function Upload() {
 
   const [prediction, setPrediction] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   // To handle upload button
   const pickImage = async () => {
@@ -47,6 +74,36 @@ export default function Upload() {
     setPrediction(temp);
     setIsLoading(false);
     setIsModalVisible(true);
+
+    if (user) {
+      // User is authenticated, proceed with updating the document in Firestore
+      try {
+        console.log("plant name : ", temp.class);
+        console.log("user email : ", user.email);
+        console.log("Firebase app : ", app);
+        const db = getFirestore(app);
+        console.log("Firebaes db : ", db);
+        const userDocRef = doc(db, 'UserHistory', user.email); // Assuming user's UID is used as document ID
+        console.log("doc : ", userDocRef);
+
+
+        /// Get the existing plants array from Firestore
+        const docSnapshot = await getDoc(userDocRef);
+        const existingPlants = docSnapshot.exists() ? docSnapshot.data().plants || [] : [];
+
+        // Append temp.class to the existing array
+        const updatedPlants = [...existingPlants, temp.class];
+
+        // Update the document in Firestore with the updated array
+        await setDoc(userDocRef, { plants: updatedPlants });
+
+      } catch (error) {
+        console.error('Error updating document:', error);
+      }
+    } else {
+      // User is not authenticated, handle accordingly (e.g., show an error message)
+      console.log('User is not authenticated. Unable to update document.');
+    }
 
   }
   return (
@@ -132,7 +189,7 @@ const styles = StyleSheet.create({
   heading: {
     fontFamily: "InknutAntiqua-Black",
     fontSize: 24,
-    fontWeight : "bold",
+    fontWeight: "bold",
     marginBottom: 20,
   },
   uploadButton: {
@@ -140,7 +197,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    margin : 20,
+    margin: 20,
   },
   uploadText: {
     color: '#fff',
