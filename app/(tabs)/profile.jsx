@@ -1,4 +1,4 @@
-import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView,ActivityIndicator, Modal, ScrollView } from 'react-native'
+import { View,TextInput,Image, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView,ActivityIndicator, Modal, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
 import { onAuthStateChanged, getAuth, signOut, signInWithEmailAndPassword } from 'firebase/auth';
@@ -97,6 +97,9 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior="padding">
+      <View style={styles.imageContainer}>
+          <Image style={styles.image} source={require("../../assets/images/login_image.png")} />
+        </View>
         {isLoading ? <ActivityIndicator size="large" /> : (
           <View style={styles.profileContainer}>
             {user ? (
@@ -118,6 +121,7 @@ const Profile = () => {
               </>
             ) : (
               <>
+              
                 <Text style={styles.loginText}>Login to your Profile</Text>
                 <TextInput
                   value={email}
@@ -170,6 +174,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  imageContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  image: {
+    width: 250,
+    height: 250,
+    resizeMode: 'contain',
   },
   profileContainer: {
     width: '100%',
@@ -244,6 +258,7 @@ const styles = StyleSheet.create({
   plantsContainer: {
     marginTop: 20,
     width: '100%',
+    maxHeight: 400,
     paddingHorizontal: 20,
   },plant: {
     fontSize: 16,

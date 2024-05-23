@@ -1,4 +1,4 @@
-import { View,TextInput, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView , ActivityIndicator} from 'react-native'
+import { View,TextInput,Image, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView , ActivityIndicator} from 'react-native'
 import React, { useState } from 'react'
 import { initializeApp } from "firebase/app";
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
@@ -63,6 +63,9 @@ const SignUp =  () => {
     return (
       <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior="padding">
+      <View style={styles.imageContainer}>
+          <Image style={styles.image} source={require("../../assets/images/signup_image.png")} />
+        </View>
         {isLoading ? <ActivityIndicator size="large" /> : 
         (
           <View style={styles.inputContainer}>
@@ -111,6 +114,16 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: '100%',
     alignItems: 'center',
+  },
+  imageContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  image: {
+    width: 250,
+    height: 250,
+    resizeMode: 'contain',
   },
   title: {
     fontSize: 20,

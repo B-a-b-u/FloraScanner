@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, ScrollView,Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
@@ -6,6 +6,7 @@ import { ActivityIndicator } from 'react-native';
 import { getDoc, doc, getFirestore, setDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
+import * as ImageManipulator from 'expo-image-manipulator';
 
 
 
@@ -37,6 +38,15 @@ export default function Upload() {
     return () => unsubscribe();
   }, []);
 
+  const resizeImage = async (uri) => {
+    const manipResult = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 224, height: 224 } }], // Resize the image to 224x224
+      { compress: 1, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+    );
+    return manipResult.base64;
+  };
+
 
   // To handle upload button
   const pickImage = async () => {
@@ -47,6 +57,7 @@ export default function Upload() {
       {
         mediaTypes: MediaTypeOptions.Images,
         base64: true,
+        quality : 0.5,
         selectionLimit: 1,
       }
     )
@@ -59,6 +70,8 @@ export default function Upload() {
       console.log("Picked Image : ", result);
     }
 
+    const resizedImageBase64 = await resizeImage(result.assets[0].uri);
+
     // Post the image to api
     setIsLoading(true);
     const response = await fetch("https://florascannerapi.onrender.com/predict", {
@@ -66,7 +79,7 @@ export default function Upload() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ image: result.assets[0].base64 })
+      body: JSON.stringify({ image: resizedImageBase64 })
     })
 
     const temp = await response.json()
@@ -108,6 +121,9 @@ export default function Upload() {
   }
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.imageContainer}>
+          <Image style={styles.image} source={require("../../assets/images/upload_screen_image.png")} />
+        </View>
       <Text style={
         {
           fontFamily: "InknutAntiqua-Black"
@@ -115,7 +131,6 @@ export default function Upload() {
       }>
         Click the Button to Upload the Plant Image
       </Text>
-
       <Pressable
         onPress={pickImage}
         style={styles.uploadButton}
@@ -208,6 +223,16 @@ const styles = StyleSheet.create({
   prediction: {
     fontSize: 18,
     marginTop: 20,
+  },
+  imageContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  image: {
+    width: 250,
+    height: 250,
+    resizeMode: 'contain',
   },
 
   centeredView: {
