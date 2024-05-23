@@ -6,6 +6,7 @@ import { getDoc, doc, getFirestore, setDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
 import * as ImageManipulator from 'expo-image-manipulator';
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 
 
 const firebaseConfig = {
@@ -19,7 +20,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig)
-
+const OPENCAGE_API_KEY = 'da971b063b1e47b686e3c42df43b8c4b';
 
 export default function Camera() {
 
@@ -44,6 +45,15 @@ export default function Camera() {
       { compress: 1, format: ImageManipulator.SaveFormat.JPEG, base64: true }
     );
     return manipResult.base64;
+  };
+
+  const getCityName = async (latitude, longitude) => {
+    const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${OPENCAGE_API_KEY}`);
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      return data.results[0].components.city || data.results[0].components.town || data.results[0].components.village || data.results[0].components.hamlet || 'Unknown location';
+    }
+    return 'Unknown location';
   };
 
 
@@ -71,6 +81,24 @@ export default function Camera() {
 
     const resizedImageBase64 = await resizeImage(result.assets[0].uri);
 
+    let cityName = "Not Found";
+
+    let { status } = await requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.log('Permission to access location was denied');
+    }
+    else{
+      let location = await getCurrentPositionAsync({});
+      console.log("User Location: ", location);
+  
+      cityName = await getCityName(location.coords.latitude, location.coords.longitude);
+      console.log("City Name: ", cityName);
+    }
+
+    // Get current date and time
+    const currentDateTime = new Date().toISOString();
+    console.log("Current DateTime: ", currentDateTime);
+
     console.log("Going to fetch")
     // Post the image to api
 
@@ -90,35 +118,33 @@ export default function Camera() {
     setIsModalVisible(true);
 
     if (user) {
-      // User is authenticated, proceed with updating the document in Firestore
       try {
-        console.log("plant name : ", temp.class);
-        console.log("user email : ", user.email);
-        console.log("Firebase app : ", app);
+        console.log("Plant name: ", temp.class);
+        console.log("User email: ", user.email);
+        console.log("City name : ",cityName);
+        console.log("Firebase app: ", app);
         const db = getFirestore(app);
-        console.log("Firebaes db : ", db);
-        const userDocRef = doc(db, 'UserHistory', user.email); // Assuming user's UID is used as document ID
-        console.log("doc : ", userDocRef);
+        console.log("Firebase db: ", db);
+        const userDocRef = doc(db, 'UserHistory', user.email);
+        console.log("doc: ", userDocRef);
 
-
-        /// Get the existing plants array from Firestore
         const docSnapshot = await getDoc(userDocRef);
         const existingPlants = docSnapshot.exists() ? docSnapshot.data().plants || [] : [];
 
-        // Append temp.class to the existing array
-        const updatedPlants = [...existingPlants, temp.class];
+        const updatedPlants = [...existingPlants, {
+          location: cityName,
+          dateTime: currentDateTime,
+          plantName: temp.class
+        }];
 
-        // Update the document in Firestore with the updated array
-        await setDoc(userDocRef, { plants: updatedPlants });
+        await setDoc(userDocRef, { plants: updatedPlants});
 
       } catch (error) {
         console.error('Error updating document:', error);
       }
     } else {
-      // User is not authenticated, handle accordingly (e.g., show an error message)
       console.log('User is not authenticated. Unable to update document.');
     }
-    
 
   }
   return (

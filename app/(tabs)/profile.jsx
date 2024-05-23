@@ -97,7 +97,7 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView style={styles.keyboardAvoidingContainer} behavior="padding">
-      <View style={styles.imageContainer}>
+        <View style={styles.imageContainer}>
           <Image style={styles.image} source={require("../../assets/images/login_image.png")} />
         </View>
         {isLoading ? <ActivityIndicator size="large" /> : (
@@ -111,9 +111,19 @@ const Profile = () => {
                 {plants.length > 0 ? (
                   <ScrollView style={styles.plantsContainer}>
                     <Text style={styles.plantsHeading}>Explored Plants</Text>
-                    {plants.map((plant, index) => (
-                      <Text key={index} style={styles.plant}>{plant}</Text>
-                    ))}
+                    {plants.map((plant, index) => {
+                      const dateTimeObj = new Date(plant.dateTime);
+                      const formattedDate = dateTimeObj.toLocaleDateString();
+                      const formattedTime = dateTimeObj.toLocaleTimeString();
+
+                      return (
+                        <View key={index} style={styles.plantItem}>
+                          <Text style={styles.plantName}>{plant.plantName}</Text>
+                          <Text style={styles.plantDetails}>{plant.location}</Text>
+                          <Text style={styles.plantDetails}>{formattedDate} {formattedTime}</Text>
+                        </View>
+                      );
+                    })}
                   </ScrollView>
                 ) : (
                   <Text style={styles.noPlantsText}>You have no plants saved</Text>
@@ -121,7 +131,6 @@ const Profile = () => {
               </>
             ) : (
               <>
-              
                 <Text style={styles.loginText}>Login to your Profile</Text>
                 <TextInput
                   value={email}
@@ -260,20 +269,26 @@ const styles = StyleSheet.create({
     width: '100%',
     maxHeight: 400,
     paddingHorizontal: 20,
-  },plant: {
-    fontSize: 16,
-    marginBottom: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  },
+  plantItem: {
     backgroundColor: '#C7FDB4',
+    padding: 10,
     borderRadius: 5,
+    marginBottom: 10,
+  },
+  plantName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  plantDetails: {
+    fontSize: 14,
+    color: '#555',
   },
   plantsHeading: {
     fontSize: 18,
     marginBottom: 10,
     fontWeight: 'bold',
   },
- 
   noPlantsText: {
     fontSize: 16,
     marginBottom: 20,
