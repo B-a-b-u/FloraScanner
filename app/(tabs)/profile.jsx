@@ -109,7 +109,7 @@ const Profile = () => {
                   <Text style={styles.logoutText}>Logout</Text>
                 </Pressable>
                 {plants.length > 0 ? (
-                  <ScrollView style={styles.plantsContainer}>
+                  <ScrollView style={styles.plantsContainer} >
                     <Text style={styles.plantsHeading}>Explored Plants</Text>
                     {plants.map((plant, index) => {
                       const dateTimeObj = new Date(plant.dateTime);
@@ -270,6 +270,7 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     paddingHorizontal: 20,
   },
+
   plantItem: {
     backgroundColor: '#C7FDB4',
     padding: 10,

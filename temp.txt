@@ -1,28 +1,104 @@
-import * as React from "react";
-import { Card } from "@rneui/base";
-import { View, Image } from "react-native";
+import { View,ScrollView, Text, SafeAreaView, Image, StyleSheet } from 'react-native'
+import { getDoc, doc, getFirestore, setDoc, onSnapshot,collection, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import { useState,useEffect } from 'react';
+import Card from '../card';
 
-export default () => {
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
+  authDomain: "florascanner-4f4ff.firebaseapp.com",
+  projectId: "florascanner-4f4ff",
+  storageBucket: "florascanner-4f4ff.appspot.com",
+  messagingSenderId: "57419221422",
+  appId: "1:57419221422:web:b827a7ffa828aeddf2203f",
+  measurementId: "G-X52047XLNC"
+};
+
+const app = initializeApp(firebaseConfig)
+
+const HomeLayout = () => {
+  const [userEmail,setUserEmail] = useState('');
+  const [userExploredPlants,setUserExploredPlants] = useState([]);
+  const [plantNames, setPlantName] = useState([]);
+
+  // To listen for any authentication state or Database changes
+  useEffect(() => {
+    const auth = getAuth(app);
+    
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUserEmail(user.email);
+      if (user) {
+        const db = getFirestore(app);
+        const userCollection = doc(db, 'UserHistory', user.email);
+        const plantsCollection  = collection(db,"PlantsData");
+        onSnapshot(userCollection,(doc) => {
+            fetchPlants(user.email);
+        })
+        onSnapshot(plantsCollection,() => {
+          fetchPlants(user.email);
+        })
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Getting all plants details
+  const fetchPlants = async (email) => {
+    const db = getFirestore(app);
+    const userCollection = doc(db, 'UserHistory', email);
+    const plantCollection = collection(db,"PlantsData");
+    console.log("plant collection : ",plantCollection);
+
+
+    try {
+      const docSnapshot = await getDoc(userCollection);
+      const plantDocSnapshot = await getDocs(plantCollection);
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        // console.log("User Explored Plants : ",data.plants);
+        const plantData = [];
+        for (let index = 0; index < data.plants.length; index++) {
+          plantData.push(data.plants[index].plantName);
+        }
+        console.log("plant names  :",plantData);
+        setUserExploredPlants(plantData);
+      } else {
+        console.log("No user document found");
+      }
+      const plantNames = [];
+      plantDocSnapshot.forEach(docs => {
+        console.log("PC data : ",docs.id);
+        plantNames.push(docs.id);
+      });
+      setPlantName(plantNames);
+      }
+     catch (error) {
+      console.error('Error fetching user plants:', error);
+      // setShowModal(true);
+    } finally {
+    }
+  };
+
+
   return (
-    <Card containerStyle={{}} wrapperStyle={{}}>
-      <Card.Title>CARD WITH DIVIDER</Card.Title>
-      <Card.Divider />
-      <View
-        style={{
-          position: "relative",
-          alignItems: "center"
-        }}
-      >
-        <Image
-          style={{ width: "100%", height: 100 }}
-          resizeMode="contain"
-          source={{
-            uri:
-              "https://avatars0.githubusercontent.com/u/32242596?s=460&u=1ea285743fc4b083f95d6ee0be2e7bb8dcfc676e&v=4"
-          }}
-        />
-        <Text>Pranshu Chittora</Text>
-      </View>
-    </Card>
+    <SafeAreaView style={styles.container}>
+      <Image
+        source={require('../../assets/images/Focus-amico.png')}
+        style={styles.logo}
+        resizeMode='contain'
+      />
+      <Text style={styles.title}>Welcome to Flora Scanner App</Text>
+      {userEmail && <Text>{userEmail}</Text>}
+      <Text style={styles.subtitle}>Explore about the Plants in just a click</Text>
+
+      <ScrollView contentContainerStyle={styles.cardsContainer}>
+        {plantNames.map((name, index) => (
+          <Card title={name} imageUrl={require("../../assets/images/default_plant_image.png")} />
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};

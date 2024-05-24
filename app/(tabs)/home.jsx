@@ -1,10 +1,9 @@
-import { View,ScrollView, Text, SafeAreaView, Image, StyleSheet } from 'react-native'
+import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, Pressable } from 'react-native'
 import { getDoc, doc, getFirestore, setDoc, onSnapshot,collection, getDocs } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
 import { useState,useEffect } from 'react';
-import Card from '../card';
-
+import Cards from '../(cards)/cards';
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
@@ -19,94 +18,135 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 
 const HomeLayout = () => {
-  const [userEmail,setUserEmail] = useState('');
-  const [userExploredPlants,setUserExploredPlants] = useState([]);
-  const [plantNames, setPlantName] = useState([]);
+  const [email,setEmail] = useState(null);
+  const [exploredPlants,setExploredPlants] = useState({});
+  const [allPlants,setAllPlants] = useState([]);
+  const [plantLoc,setPlantLoc] = useState([]);
+  const [plantDate,setPlantDate] = useState([]);
 
-  // To listen for any authentication state or Database changes
   useEffect(() => {
     const auth = getAuth(app);
     
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUserEmail(user.email);
+      const db = getFirestore(app);
       if (user) {
-        const db = getFirestore(app);
+        setEmail(user.email);
         const userCollection = doc(db, 'UserHistory', user.email);
-        const plantsCollection  = collection(db,"PlantsData");
         onSnapshot(userCollection,(doc) => {
-            fetchPlants(user.email);
+            fetchUserPlants(user.email);
         })
-        onSnapshot(plantsCollection,() => {
-          fetchPlants(user.email);
-        })
+        
       }
+      const plantsCollection  = collection(db,"PlantsData");
+      onSnapshot(plantsCollection,() => {
+        fetchAllPlants();
+      })
+
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Getting all plants details
-  const fetchPlants = async (email) => {
-    const db = getFirestore(app);
-    const userCollection = doc(db, 'UserHistory', email);
-    const plantCollection = collection(db,"PlantsData");
-    console.log("plant collection : ",plantCollection);
+const fetchUserPlants = async (email) => {
+  const db = getFirestore(app);
+  const userCollection = doc(db, 'UserHistory', email);
+  console.log("user collection for user plants",userCollection);
 
-
-    try {
-      const docSnapshot = await getDoc(userCollection);
-      const plantDocSnapshot = await getDocs(plantCollection);
-      if (docSnapshot.exists()) {
-        const data = docSnapshot.data();
-        // console.log("User Explored Plants : ",data.plants);
-        const plantData = [];
-        for (let index = 0; index < data.plants.length; index++) {
-          plantData.push(data.plants[index].plantName);
+  try{
+    const docSnapshot = await getDoc(userCollection);
+    if(docSnapshot.exists()){
+      const data = docSnapshot.data();
+      let userPlants = [];
+      let locations = [];
+      let dateTimes = [];
+      let plantobj = new Object();
+      for (let index = 0; index < data.plants.length; index++) {
+        let plant = data.plants[index].plantName;
+        if(plantobj.hasOwnProperty(plant)){
+          plantobj[plant]["locations"].push(data.plants[index].location);
+          plantobj[plant]["dates"].push(data.plants[index].dateTime);
         }
-        console.log("plant names  :",plantData);
-        setUserExploredPlants(plantData);
-      } else {
-        console.log("No user document found");
+        else{
+          plantobj[plant] = {
+            "locations" :[ data.plants[index].location],
+            "dates" : [data.plants[index].dateTime],
+          }
+        }
+        
       }
-      const plantNames = [];
-      plantDocSnapshot.forEach(docs => {
-        console.log("PC data : ",docs.id);
-        plantNames.push(docs.id);
-      });
-      setPlantName(plantNames);
-      }
-     catch (error) {
-      console.error('Error fetching user plants:', error);
-      // setShowModal(true);
-    } finally {
+     console.log("objj : ",plantobj);
+      setExploredPlants(plantobj);
     }
-  };
+    else{
+      console.log("User has Explored No plants");
+    }
+  }
+  catch(error){
+    console.error("Fetch users plants error : ",error);
+  }
+}
+
+const fetchAllPlants = async () => {
+  const db = getFirestore(app);
+  const plantCollection = collection(db,"PlantsData");
+  console.log("collection for  plants",plantCollection);
+
+  try{
+    const plantDocSnapshot = await getDocs(plantCollection);
+    if(plantDocSnapshot){
+      const plants = [];
+      plantDocSnapshot.forEach(docs => {
+        plants.push(docs.id);
+      });
+      console.log("all plants : ",plants);
+      setAllPlants(plants);
+    }
+    else{
+      console.log("No Plant data found");
+    }
+  }
+  catch(error){
+    console.error("Fetch All plants Error",error);
+  }
+
+
+}
 
 
   return (
     <SafeAreaView style={styles.container}>
       <Image
-        source={require('../../assets/images/Focus-amico.png')}
+        source={require("../../assets/images/Focus-amico.png")}
         style={styles.logo}
         resizeMode='contain'
       />
       <Text style={styles.title}>Welcome to Flora Scanner App</Text>
-      {userEmail && <Text>{userEmail}</Text>}
       <Text style={styles.subtitle}>Explore about the Plants in just a click</Text>
 
-      <ScrollView contentContainerStyle={styles.cardsContainer}>
-        {plantNames.map((name, index) => (
-          <Card title={name} imageUrl={require("../../assets/images/default_plant_image.png")} />
-        ))}
+      <ScrollView>
+      {allPlants.map((name, index) =>{
+        
+        const explored = exploredPlants.hasOwnProperty(name);
+        console.log("Expolored : ",explored);
+        return (
+        
+          <Pressable key={index}>
+            <Cards isExplored={explored} title={name} key={index} plantData={explored? exploredPlants[name] : null} />
+          </Pressable>
+  )
+      }
+      )}
+
+   
       </ScrollView>
+
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -116,17 +156,6 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     marginBottom: 20,
-  },
-  imageContainer  :{
-    flex : 1,
-    justifyContent : "center",
-    alignItems : "center",
-  },
-  image : {
-    width : 100,
-    height : 100,
-    resizeMode : "contain",
-    
   },
   title: {
     fontSize: 24,
@@ -139,19 +168,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  cardsContainer: {
+  featuresContainer: {
     marginTop: 20,
-    width : 300,
-    alignItems: 'center',
   },
-  card: {
-    width: '100%',
-    marginVertical: 10,
-  },
-  cardText: {
+  featureTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
+    marginBottom: 10,
+  },
+  featureItem: {
+    marginBottom: 10,
+  },
+  featureText: {
+    fontSize: 14,
   },
 });
+
 export default HomeLayout
