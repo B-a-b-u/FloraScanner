@@ -3,7 +3,7 @@ import { getDoc, doc, getFirestore, setDoc, onSnapshot,collection, getDocs } fro
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
 import { useState,useEffect } from 'react';
-import Cards from '../(cards)/cards';
+import Cards from '../(components)/cards';
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
@@ -123,23 +123,16 @@ const fetchAllPlants = async () => {
       <Text style={styles.title}>Welcome to Flora Scanner App</Text>
       <Text style={styles.subtitle}>Explore about the Plants in just a click</Text>
 
-      <ScrollView>
-      {allPlants.map((name, index) =>{
-        
-        const explored = exploredPlants.hasOwnProperty(name);
-        console.log("Expolored : ",explored);
-        return (
-        
-          <Pressable key={index}>
-            <Cards isExplored={explored} title={name} key={index} plantData={explored? exploredPlants[name] : null} />
-          </Pressable>
-  )
-      }
-      )}
-
-   
-      </ScrollView>
-
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+                {allPlants.map((name, index) => {
+                    const explored = exploredPlants.hasOwnProperty(name);
+                    return (
+                        <Pressable key={index}>
+                            <Cards isExplored={explored} title={name} plantData={explored ? exploredPlants[name] : null} />
+                        </Pressable>
+                    );
+                })}
+            </ScrollView>
     </SafeAreaView>
   )
 }
@@ -168,6 +161,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
+  
   featuresContainer: {
     marginTop: 20,
   },
