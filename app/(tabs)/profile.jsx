@@ -1,4 +1,4 @@
-import { View,TextInput,Image, Text, Pressable,StyleSheet,SafeAreaView, KeyboardAvoidingView,ActivityIndicator, Modal, ScrollView } from 'react-native'
+import { View, TextInput, Image, Text, Pressable, StyleSheet, SafeAreaView, KeyboardAvoidingView, ActivityIndicator, Modal, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
 import { onAuthStateChanged, getAuth, signOut, signInWithEmailAndPassword } from 'firebase/auth';
@@ -7,16 +7,15 @@ import { getFirestore, doc, getDoc, onSnapshot, getDocs } from 'firebase/firesto
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB4cn83vwE7UJlyr-eH5l4hnk56YiySj0s",
-  authDomain: "florascanner-4f4ff.firebaseapp.com",
-  projectId: "florascanner-4f4ff",
-  storageBucket: "florascanner-4f4ff.appspot.com",
-  messagingSenderId: "57419221422",
-  appId: "1:57419221422:web:b827a7ffa828aeddf2203f",
-  measurementId: "G-X52047XLNC"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MSG_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENTID
 };
-
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig)
 
 
 const Profile = () => {
@@ -26,18 +25,14 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [plants, setPlants] = useState([]);
+  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
     const auth = getAuth(app);
-    
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (user) {
-        const db = getFirestore(app);
-        const userDocRef = doc(db, 'UserHistory', user.email);
-        onSnapshot(userDocRef,(doc) => {
-            fetchUserPlants(user.email)
-        })
         fetchUserPlants(user.email);
       }
     });
@@ -53,6 +48,7 @@ const Profile = () => {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       console.error('Error signing in:', error.message);
+      setModalMessage('Error signing in. Please try again.');
       setShowModal(true);
     } finally {
       setEmail('');
@@ -74,9 +70,10 @@ const Profile = () => {
       } else {
         console.log("No user document found");
       }
-      }
-     catch (error) {
+    }
+    catch (error) {
       console.error('Error fetching user plants:', error);
+      setModalMessage('Error fetching user plants. Please try again.');
       setShowModal(true);
     } finally {
       setIsLoading(false);
@@ -108,9 +105,10 @@ const Profile = () => {
                 <Pressable onPress={handleLogOut} style={styles.logoutButton}>
                   <Text style={styles.logoutText}>Logout</Text>
                 </Pressable>
+                <Text style={styles.plantsHeading}>Explored Plants</Text>
                 {plants.length > 0 ? (
                   <ScrollView style={styles.plantsContainer} >
-                    <Text style={styles.plantsHeading}>Explored Plants</Text>
+
                     {plants.map((plant, index) => {
                       const dateTimeObj = new Date(plant.dateTime);
                       const formattedDate = dateTimeObj.toLocaleDateString();
@@ -136,6 +134,9 @@ const Profile = () => {
                   value={email}
                   style={styles.input}
                   placeholder='Email'
+                  keyboardType='email-address'
+                  textContentType='emailAddress'
+                  autoCapitalize='none'
                   onChangeText={(text) => setEmail(text)}
                 />
                 <TextInput
@@ -144,9 +145,10 @@ const Profile = () => {
                   placeholder='Password'
                   onChangeText={(text) => setPassword(text)}
                   secureTextEntry
+                  textContentType='password'
                 />
                 <Pressable onPress={handleSubmit} style={styles.submitButton}>
-                  <Text style={styles.submitText}>Submit</Text>
+                  <Text style={styles.submitText}>Login</Text>
                 </Pressable>
                 <Link href='signup' style={styles.signupLink}>
                   <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
@@ -162,7 +164,7 @@ const Profile = () => {
           onRequestClose={closeModal}
         >
           <View style={styles.modalContainer}>
-            <Text style={styles.modalText}>Error signing in. Please try again.</Text>
+            <Text style={styles.modalText}>{modalMessage}</Text>
             <Pressable style={styles.closeButton} onPress={closeModal}>
               <Text style={styles.closeButtonText}>Close</Text>
             </Pressable>
@@ -172,6 +174,7 @@ const Profile = () => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -200,14 +203,19 @@ const styles = StyleSheet.create({
   },
   profileText: {
     fontSize: 20,
-    marginBottom: 20,
+    marginBottom: 5,
   },
   logoutButton: {
     backgroundColor: '#FF6347',
     paddingVertical: 10,
     paddingHorizontal: 20,
+    margin: 10,
     borderRadius: 5,
-    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
   },
   logoutText: {
     color: '#fff',
@@ -226,21 +234,20 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   submitButton: {
-    backgroundColor: '#41B06E',
+    backgroundColor: '#71CF4C',
     paddingVertical: 10,
     paddingHorizontal: 20,
+    margin: 10,
     borderRadius: 5,
-    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
   },
   submitText: {
     color: '#fff',
     fontSize: 16,
-  },
-  modalContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   signupLink: {
     alignItems: 'center',
@@ -248,6 +255,12 @@ const styles = StyleSheet.create({
   signupText: {
     color: '#71B16E',
     fontSize: 16,
+  },
+  modalContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalText: {
     fontSize: 20,
@@ -270,7 +283,6 @@ const styles = StyleSheet.create({
     maxHeight: 400,
     paddingHorizontal: 20,
   },
-
   plantItem: {
     backgroundColor: '#C7FDB4',
     padding: 10,
