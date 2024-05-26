@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, Pressable } from 'react-native'
+import { FlatList, Text, SafeAreaView, Image, StyleSheet, ScrollView, Pressable } from 'react-native'
 import { getDoc, doc, getFirestore, setDoc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
@@ -109,27 +109,34 @@ const CardsPage = () => {
 
 
   }
+
+  const renderItem = ({ item }) => {
+    const explored = exploredPlants.hasOwnProperty(item);
+    return (
+      <Pressable style={styles.cardContainer}>
+        <Cards
+          isExplored={explored}
+          title={item}
+          plantData={explored ? exploredPlants[item] : null}
+          medicinalData={explored ? allPlantsData[item] : null}
+        />
+      </Pressable>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Try to Reveal these Plants </Text>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {allPlants.map((name, index) => {
-          const explored = exploredPlants.hasOwnProperty(name);
-          return (
-            <Pressable key={index} style={styles.cardContainer}>
-              <Cards
-                isExplored={explored}
-                title={name}
-                plantData={explored ? exploredPlants[name] : null}
-                medicinalData={explored ? allPlantsData[name] : null}
-              />
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <Text style={styles.title}>Try to Reveal these Plants</Text>
+      <FlatList
+        data={allPlants}
+        renderItem={renderItem}
+        keyExtractor={(item) => item}
+        contentContainerStyle={styles.flatListContainer}
+      />
     </SafeAreaView>
   );
 };
+
 
 
 const styles = StyleSheet.create({

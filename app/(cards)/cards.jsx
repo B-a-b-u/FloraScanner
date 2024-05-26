@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import FlipCard from 'react-native-flip-card';
 
 const Cards = ({ title, image = require("../../assets/images/default_plant_image.png"), isExplored, plantData, medicinalData }) => {
+    console.log("Medicinal Plants Data : ",medicinalData?medicinalData.image:medicinalData);
     const [plantLocations, setPlantLocations] = useState([]);
     const [plantDates, setPlantDates] = useState([]);
     const [plantTimes, setPlantTimes] = useState([]);
@@ -27,9 +28,10 @@ const Cards = ({ title, image = require("../../assets/images/default_plant_image
             setPlantTimes(times);
         }
         if (medicinalData) {
+            console.log("Medicinal Data l : ",medicinalData);
             setPlantMedicinalData(medicinalData);
         }
-    }, [plantData]);
+    }, [plantData,medicinalData]);
 
     const handleExploration = () => {
         setIsExploreModalVisible(true);
@@ -58,7 +60,12 @@ const Cards = ({ title, image = require("../../assets/images/default_plant_image
                 {/* Face Side */}
                 <View style={styles.card}>
                     <View style={styles.cardImageContainer}>
-                        <Image source={image} style={styles.cardImage} />
+                        {plantMedicinalData? 
+                        <Image src={plantMedicinalData.image} style={styles.cardImage} /> 
+                    :
+                    <Image source={image} style={styles.cardImage} />
+                    }
+                    {/* <Image source={image} style={styles.cardImage} /> */}
                     </View>
                     <View style={styles.cardContent}>
                         <Text>{isExplored ? title : "UnExplored"}</Text>

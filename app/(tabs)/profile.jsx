@@ -34,8 +34,14 @@ const Profile = () => {
       setUser(user);
       if (user) {
         fetchUserPlants(user.email);
+        const db = getFirestore(app);
+        const userCollection = doc(db, 'UserHistory', user.email);
+        onSnapshot(userCollection, (doc) => {
+          fetchUserPlants(user.email);
+        })
       }
     });
+
 
     return () => unsubscribe();
   }, []);
@@ -145,6 +151,7 @@ const Profile = () => {
                   placeholder='Password'
                   onChangeText={(text) => setPassword(text)}
                   secureTextEntry
+                  autoCapitalize='none'
                   textContentType='password'
                 />
                 <Pressable onPress={handleSubmit} style={styles.submitButton}>
