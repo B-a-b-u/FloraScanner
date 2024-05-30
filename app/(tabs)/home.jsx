@@ -2,6 +2,7 @@ import { View, Text, SafeAreaView, Image, StyleSheet, Pressable } from 'react-na
 import { Link } from 'expo-router';
 
 
+
 const HomeLayout = () => {
 
   return (
@@ -19,7 +20,8 @@ const HomeLayout = () => {
           Explore Plants
         </Link>
       </Pressable>
-    </SafeAreaView>
+      
+    </SafeAreaView> 
   )
 }
 

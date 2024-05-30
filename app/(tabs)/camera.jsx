@@ -7,7 +7,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
 import * as ImageManipulator from 'expo-image-manipulator';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
-
+import CustomActivityIndicator from '../(cards)/activityIndicator';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -147,7 +147,13 @@ export default function Camera() {
 
 
       }
+
+      const delay = async (ms) => {
+        return new Promise((resolve) => 
+            setTimeout(resolve, ms));
+    };
       setPrediction(temp);
+      await delay(2000);
       setIsLoading(false);
       setIsModalVisible(true);
 
@@ -211,7 +217,7 @@ export default function Camera() {
         >Capture Image</Text>
       </Pressable>
 
-      {isLoading ? <ActivityIndicator size="large" /> :
+      {isLoading ?  <CustomActivityIndicator show={isLoading} resizeMethod='contain' style = {styles.image}  /> :
         <Modal
           animationType="slide"
           transparent={true}

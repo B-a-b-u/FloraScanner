@@ -8,7 +8,8 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from "firebase/app";
 import * as ImageManipulator from 'expo-image-manipulator';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
-
+import CustomActivityIndicator from '../(cards)/activityIndicator';
+import { withDelay } from 'react-native-reanimated';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -28,6 +29,7 @@ export default function Upload() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [user, setUser] = useState(null);
+  const [showActivityIndicator,setShowActivityIndicator] = useState(false);
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -98,7 +100,7 @@ export default function Upload() {
 
 
       // Post the image to api
-      setIsLoading(true);
+      setShowActivityIndicator(true);
       const api = process.env.EXPO_PUBLIC_FS_API;
       const response = await fetch(api, {
         method: "POST",
@@ -143,10 +145,15 @@ export default function Upload() {
 
 
       }
-      setPrediction(temp);
-      setIsLoading(false);
-      setIsModalVisible(true);
+      const delay = async (ms) => {
+        return new Promise((resolve) => 
+            setTimeout(resolve, ms));
+    };
 
+      setPrediction(temp);
+      await delay(2000)
+      setShowActivityIndicator(false);
+      setIsModalVisible(true);
       if (user) {
         try {
 
@@ -190,6 +197,8 @@ export default function Upload() {
     }
 
   }
+
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.imageContainer}>
@@ -207,7 +216,7 @@ export default function Upload() {
         >Upload Image</Text>
       </Pressable>
 
-      {isLoading ? <ActivityIndicator size='large' /> :
+      {showActivityIndicator ? <CustomActivityIndicator show={showActivityIndicator} resizeMethod='contain' style = {styles.image}  /> :
         <Modal
           animationType="slide"
           transparent={true}
@@ -380,3 +389,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
