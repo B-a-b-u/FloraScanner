@@ -1,50 +1,59 @@
-# Welcome to your Expo app 👋
+# FloraScanner Frontend (React Native)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**FloraScanner** is a mobile application built with React Native that allows users to identify plant species by analyzing images. This project uses a Convolutional Neural Network (CNN) model for image classification and provides detailed information about the identified plant species, including its medicinal properties.
 
-## Get started
+## Features
 
-1. Install dependencies
+- User-friendly interface for capturing and uploading plant images.
+- Real-time image analysis using a trained Convolutional Neural Network (CNN) model.
+- Provides detailed information about identified plant species, including medicinal and ecological benefits.
+- Option to save identified plants to a local database for future reference.
+- Cross-platform compatibility (iOS and Android).
+  
+## Tech Stack
 
-   ```bash
-   npm install
-   ```
+- **React Native**: For building the mobile application.
+- **Firebase**: For user authentication and storing plant information.
+- **TensorFlow**: Used for the CNN model to classify plant species.
+- **FastAPI**: Backend to serve the trained model and provide identification results.
 
-2. Start the app
+## Backend Repo
+[Backend Repo](https://github.com/B-a-b-u/FloraScannerApi.git)
 
-   ```bash
-    npx expo start
-   ```
+## Download APK
 
-In the output, you'll find options to open the app in a
+You can download the APK of the **FloraScanner** app from the link below:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+[Download FloraScanner APK](https://drive.google.com/file/d/10CFdDvwO7A4GwnZm5gEauvPJAEpvNCaQ/view?usp=sharing)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Installation and Setup
 
-## Get a fresh project
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/B-a-b-u/FloraScanner.git
+    cd FloraScanner
+    ```
 
-When you're ready, run:
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
 
-```bash
-npm run reset-project
-```
+3. Run the app on an emulator or connected device:
+    ```bash
+    npm run android
+    # or for iOS
+    npm run ios
+    ```
+## Dataset
+- [kaggle](https://www.kaggle.com/datasets/aryashah2k/indian-medicinal-leaves-dataset)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Contributing
 
-## Learn more
+Contributions are welcome! Please follow these steps to contribute:
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature-branch-name`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature-branch-name`
+5. Open a pull request.
